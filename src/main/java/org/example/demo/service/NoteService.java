@@ -7,61 +7,50 @@ import java.util.*;
 
 @Service
 public class NoteService {
-    private final Map<Long, Note> noteMap = new HashMap<>();
+    private final Map<Long, Note> notes = new HashMap<>();
     private final Random random = new Random();
 
     public List<Note> listAll() {
-        return new ArrayList<>(noteMap.values());
+        return notes.values().stream().toList();
     }
 
     public Note add(Note note) {
-        long id = generateUniqueId();
-        note.setId(id);
-        noteMap.put(id, note);
+        long nextId = generateUniqueId();
+        nextId++;
+        note.setId(nextId);
+        notes.put(nextId, note);
         return note;
     }
 
     public void deleteById(long id) {
-        Optional<Note> note = getNoteById(id);
-        note.ifPresentOrElse(
-                n -> noteMap.remove(id),
-                () -> {
-                    throw new RuntimeException("Note with ID " + id + " not found");
-                }
-        );
+        if (notes.remove(id) == null) {
+            throw new RuntimeException("Note with id = " + id + " doesn't exist!");
+        } else {
+            notes.remove(id);
+        }
     }
 
-    public void update(long id, Note updatedNote) {
-        Optional<Note> existingNote = getNoteById(id);
-        existingNote.ifPresentOrElse(
-                n -> {
-                    if (n.getId() != null) { // Перевіряємо, чи ID не є null
-                        n.setTitle(updatedNote.getTitle());
-                        n.setContent(updatedNote.getContent());
-                        noteMap.put(id, n);
-                    } else {
-                        throw new RuntimeException("Note with ID " + id + " has a null ID");
-                    }
-                },
-                () -> {
-                    throw new RuntimeException("Note with ID " + id + " not found");
-                }
-        );
+    public void update(Note note) {
+        final Long id = note.getId();
+        if (notes.containsKey(id)) {
+            Note currentNote = notes.get(id);
+            currentNote.setTitle(note.getTitle());
+            currentNote.setContent(note.getContent());
+        } else {
+            throw new RuntimeException("Note with id = " + note.getId() + " doesn`t exist!");
+        }
     }
 
-    public Optional<Note> getById(long id) {
-        return Optional.ofNullable(noteMap.get(id));
+    public Note getById(long id) {
+        return notes.get(id);
     }
 
     private long generateUniqueId() {
         long id;
         do {
             id = random.nextLong();
-        } while (id <= 0 || noteMap.containsKey(id));
+        } while (id <= 0 || notes.containsKey(id));
         return id;
     }
 
-    private Optional<Note> getNoteById(long id) {
-        return Optional.ofNullable(noteMap.get(id));
-    }
 }
