@@ -3,54 +3,60 @@ package org.example.demo.service;
 import org.example.demo.entities.Note;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class NoteService {
-    private final Map<Long, Note> notes = new HashMap<>();
-    private final Random random = new Random();
+    private List<Note> noteList = new ArrayList<>();
+    private long nextId = 1;
 
     public List<Note> listAll() {
-        return notes.values().stream().toList();
+        return new ArrayList<>(noteList);
     }
 
     public Note add(Note note) {
-        long nextId = generateUniqueId();
-        nextId++;
         note.setId(nextId);
-        notes.put(nextId, note);
+        nextId++;
+        noteList.add(note);
         return note;
     }
 
     public void deleteById(long id) {
-        if (notes.remove(id) == null) {
-            throw new RuntimeException("Note with id = " + id + " doesn't exist!");
+        Note noteToRemove = null;
+        for (Note note : noteList) {
+            if (note.getId() == id) {
+                noteToRemove = note;
+                break;
+            }
+        }
+        if (noteToRemove != null) {
+            noteList.remove(noteToRemove);
         } else {
-            notes.remove(id);
+            throw new IllegalArgumentException("Note with id " + id + " not found");
         }
     }
 
     public void update(Note note) {
-        final Long id = note.getId();
-        if (notes.containsKey(id)) {
-            Note currentNote = notes.get(id);
-            currentNote.setTitle(note.getTitle());
-            currentNote.setContent(note.getContent());
-        } else {
-            throw new RuntimeException("Note with id = " + note.getId() + " doesn`t exist!");
+        long id = note.getId();
+        for (int i = 0; i < noteList.size(); i++) {
+            if (noteList.get(i).getId() == id) {
+                noteList.set(i, note);
+                return;
+            }
         }
+        throw new IllegalArgumentException("Note with id " + id + " not found");
     }
 
     public Note getById(long id) {
-        return notes.get(id);
+        for (Note note : noteList) {
+            if (note.getId() == id) {
+                return note;
+            }
+        }
+        throw new IllegalArgumentException("Note with id " + id + " not found");
     }
 
-    private long generateUniqueId() {
-        long id;
-        do {
-            id = random.nextLong();
-        } while (id <= 0 || notes.containsKey(id));
-        return id;
-    }
+
 
 }

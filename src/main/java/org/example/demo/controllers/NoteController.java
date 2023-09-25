@@ -7,50 +7,48 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
-@RequestMapping(value = "/note")
+@RequestMapping("/note")
 public class NoteController {
+    private NoteService service = new NoteService();
 
-    private NoteService noteService;
-
-    public NoteController(NoteService noteService) {
-        this.noteService = noteService;
+    @GetMapping("/list")
+    public ModelAndView list(){
+        ModelAndView res = new ModelAndView("list");
+        res.addObject("notes", service.listAll());
+        return res;
     }
 
-    @GetMapping(value = "/list")
-    public ModelAndView getListOfNotes() {
-        ModelAndView model = new ModelAndView("notes/main-page");
-        model.addObject("notes", noteService.listAll());
-        return model;
+    @GetMapping("/add")
+    public ModelAndView getAddPage(Note note) {
+        ModelAndView modelAndView = new ModelAndView("add");
+        modelAndView.addObject("note", note);
+        return modelAndView;
     }
 
-    @PostMapping(path = "/delete")
-    public String deleteNote(@RequestParam("id") Long id) {
-        noteService.deleteById(id);
+    @PostMapping("/add")
+    public ModelAndView add(@ModelAttribute("note") Note note){
+        service.add(note);
+        return new ModelAndView("redirect:/note/list");
+    }
+
+    @PostMapping("/delete")
+    public String delete(@RequestParam Long id){
+        service.deleteById(id);
         return "redirect:/note/list";
     }
 
-    @GetMapping(value = "/edit")
-    public ModelAndView editNote(@RequestParam("id") Long id) {
-        ModelAndView edit = new ModelAndView("notes/editing-page");
-        Note byId = noteService.getById(id);
-        edit.addObject("note", byId);
-        return edit;
+    @GetMapping("/edit/{id}")
+    public ModelAndView getEditPage(@PathVariable Long id) {
+        ModelAndView res = new ModelAndView("edit");
+        Note note = service.getById(id);
+        System.out.println("edit> id: " + note.getId());
+        res.addObject("note", note);
+        return res;
     }
 
-    @PostMapping(path = "/edit")
-    public String updateNote(@ModelAttribute("note") Note updateNote) {
-        noteService.update(updateNote);
-        return "redirect:/note/list";
-    }
-
-    @GetMapping(value = "/create")
-    public String createNote() {
-        return "notes/creating-new-node-page";
-    }
-
-    @PostMapping(path = "/create")
-    public String updateListOfNodes(@ModelAttribute("note") Note newNote) {
-        noteService.add(newNote);
-        return "redirect:/note/list";
+    @PostMapping("/edit")
+    public ModelAndView edit(Note note){
+        service.update(note);
+        return new ModelAndView("redirect:/note/list");
     }
 }

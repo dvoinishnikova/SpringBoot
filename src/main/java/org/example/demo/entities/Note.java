@@ -1,22 +1,17 @@
 package org.example.demo.entities;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
 @Getter
 @Setter
-@ToString
 public class Note {
+    long id;
+    String title;
+    String content;
 
-    private Long id;
-    private String title;
-    private String content;
-
-    public Note(Long id, String title, String content) {
-        this.id = id;
+    public Note(String title, String content) {
         this.title = title;
         this.content = content;
     }
-
-
 }
