@@ -1,5 +1,6 @@
 package org.example.demo.controllers;
 
+import lombok.RequiredArgsConstructor;
 import org.example.demo.entities.Note;
 import org.example.demo.service.NoteService;
 import org.springframework.stereotype.Controller;
@@ -8,8 +9,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 @RequestMapping("/note")
+@RequiredArgsConstructor
 public class NoteController {
-    private NoteService service = new NoteService();
+    private final NoteService service;
 
     @GetMapping("/list")
     public ModelAndView list(){
